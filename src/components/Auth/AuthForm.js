@@ -7,7 +7,7 @@ const AuthForm = () => {
   const passwordInputRef = useRef();
 
   const [isLogin, setIsLogin] = useState(true);
-const [isLoading,setLoading]=useState(false)
+  const [isLoading, setLoading] = useState(false);
   const switchAuthModeHandler = () => {
     setIsLogin((prevState) => !prevState);
   };
@@ -17,36 +17,51 @@ const [isLoading,setLoading]=useState(false)
     const enteredEmail = emailInputRef.current.value;
     const enteredPswd = passwordInputRef.current.value;
 
-    setLoading(true)
+    setLoading(true);
+    let url;
     if (isLogin) {
+      url =
+        "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyDWHwhZR4c7ubXaQLCG9oMpHbrJdCvJsVY";
     } else {
-      fetch(
-        "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyDWHwhZR4c7ubXaQLCG9oMpHbrJdCvJsVY",
-        {
-          method: "POST",
-          body: JSON.stringify({
-            email: enteredEmail,
-            password: enteredPswd,
-            returnSecureToken: true,
-          }),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      ).then((res) => {
-        setLoading(false)
+      url =
+        "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyDWHwhZR4c7ubXaQLCG9oMpHbrJdCvJsVY";
+    }
+    fetch(
+      url,
+
+      {
+        method: "POST",
+        body: JSON.stringify({
+          email: enteredEmail,
+          password: enteredPswd,
+          returnSecureToken: true,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    )
+      .then((res) => {
+        setLoading(false);
         if (res.ok) {
+          return res.json();
         } else {
           return res.json().then((data) => {
             let errorMessage = "Authentication failed!";
             //if (data && data.error && data.error.message) {
-              //errorMessage = data.error.message;
-           // }
-            alert(errorMessage)
+            //errorMessage = data.error.message;
+            // }
+
+            throw new Error(errorMessage);
           });
         }
+      })
+      .then((data) => {
+        console.log(data);
+      })
+      .catch((err) => {
+        alert(err.message);
       });
-    }
   };
 
   return (
@@ -67,7 +82,9 @@ const [isLoading,setLoading]=useState(false)
           />
         </div>
         <div className={classes.actions}>
-          {!isLoading && <button>{ isLogin ? "Login" : "Create Account"}</button>}
+          {!isLoading && (
+            <button>{isLogin ? "Login" : "Create Account"}</button>
+          )}
           {isLoading && <p>Loading..</p>}
           <button
             type="button"
